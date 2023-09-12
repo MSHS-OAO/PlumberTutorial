@@ -7,67 +7,107 @@
 #    https://www.rplumber.io/
 #
 
-uppressMessages({
-  library(plumber)
-  library(pool)
-  library(assertr)
-  library(readxl)
-  library(writexl)
-  library(plyr)
-  library(dplyr)
-  library(data.table)
-  library(zoo)
-  library(lubridate)
-  library(tidyverse)
-  library(ggQC)
-  library(utils)
-  library(scales)
-  library(chron)
-  library(bupaR)
-  library(shiny)
-  library(DT)
-  library(DiagrammeR)
-  library(shinyalert)
-  library(edeaR)
-  library(processmapR)
-  library(processmonitR)
-  library(processanimateR)
-  library(tidyr)
-  library(lubridate)
-  library(RColorBrewer)
-  library(DiagrammeR)
-  library(ggplot2)
-  library(leaflet)
-  library(readr)
-  library(highcharter)
-  library(broom)
-  library(tis) # for US holidays
-  library(vroom)
-  library(openxlsx)
-  library(sjmisc)
-  library(tools)
-  library(here)
-  library(fasttime)
-  library(janitor)
-  library(stringr)
-  library(glue)
-  library(magrittr)
-  library(DBI)
-  library(odbc)
-  #library(reshape2)
-})
+library(plumber)
+library(pool)
+library(assertr)
+library(readxl)
+library(writexl)
+library(plyr)
+library(dplyr)
+library(data.table)
+library(zoo)
+library(lubridate)
+library(tidyverse)
+library(ggQC)
+library(utils)
+library(scales)
+library(chron)
+library(bupaR)
+library(shiny)
+library(DT)
+library(DiagrammeR)
+library(edeaR)
+library(processmapR)
+library(processmonitR)
+library(processanimateR)
+library(tidyr)
+library(lubridate)
+library(RColorBrewer)
+library(DiagrammeR)
+library(ggplot2)
+library(leaflet)
+library(readr)
+library(broom)
+library(tis) # for US holidays
+library(vroom)
+library(openxlsx)
+library(sjmisc)
+library(tools)
+library(here)
+library(fasttime)
+library(janitor)
+library(stringr)
+library(glue)
+library(magrittr)
+library(DBI)
+library(odbc)
+library(dbplyr)
+#library(reshape2)
+
+
+# DB DSN 
+dsn <- "OAO Cloud DB Production"
+
+
+#' @apiTitle Balanced Scorecards API
+#' @apiDescription API for fetching the scorecards data, and processing the scorecards data
 
 
 
-#* @apiTitle Balanced Scorecards API
-#* @apiDescription API for fetching the scorecards data, and processing the scorecards data
-
-#* Echo back the input
-#* @param msg The message to echo
-#* @get /echo
-function(msg = "") {
-    list(msg = paste0("The message is: '", msg, "'"))
+#' get the data operational data
+#' @serializer rds
+#' @param service_input parameter to filter based on service line - format "Service Name"
+#' @param month_input parameter to filter based on service line - format "mm-yyyy"
+#' @post /get-operational-data
+get_ops_data <- function(service_input,month_input,res){
+  
+  # service_input = "Nursing"
+  # month_input = "04-2023"
+  
+  month <- as.Date(paste0(month_input, "-01"), "%m-%Y-%d")
+  format <- "YYYY-MM-DD HH24:MI:SS"
+  
+  
+  conn <- dbConnect(drv = odbc::odbc(),
+                    dsn = dsn)
+  sr_tbl <- tbl(conn, "SUMMARY_REPO")
+  ytd_metrics <- sr_tbl %>% 
+    filter(SERVICE %in% service_input,
+           TO_DATE(month, format) == REPORTING_MONTH) %>%
+    select(-UPDATED_TIME, -UPDATED_USER) %>% collect() %>%
+    rename(Service = SERVICE,
+           Site = SITE,
+           Premier_Reporting_Period = PREMIER_REPORTING_PERIOD,
+           value_rounded = VALUE,
+           Reporting_Month_Ref = REPORTING_MONTH
+    ) %>%
+    mutate(Reporting_Month = format(Reporting_Month_Ref, "%m-%Y"))%>% 
+    select(-METRIC_NAME_SUBMITTED) %>%
+    distinct()
+  
+  dbDisconnect(conn)
+  
+  list(ops_data = ytd_metrics)
+  
 }
+
+#* API status function
+#* @get /status
+status <- function() {
+  list(status = "API is running",
+       time = Sys.time())
+}
+
 
 #* Plot a histogram
 #* @serializer png
@@ -77,13 +117,6 @@ function() {
     hist(rand)
 }
 
-#* Return the sum of two numbers
-#* @param a The first number to add
-#* @param b The second number to add
-#* @post /sum
-function(a, b) {
-    as.numeric(a) + as.numeric(b)
-}
 
 # Programmatically alter your API
 #* @plumber
