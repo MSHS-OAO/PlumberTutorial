@@ -52,6 +52,8 @@ library(magrittr)
 library(DBI)
 library(odbc)
 library(dbplyr)
+library(plotly)
+
 #library(reshape2)
 
 
@@ -154,8 +156,8 @@ function(service_input,month_input) {
     
     filename <- paste0(service_input,month_input,".png")
     ggsave(filename,graph_bar)
-    
-    #filename <- "Nursing04-2023.png"
+
+    # filename <- "Nursing04-2023.png"
     readBin(filename, "raw", n = file.info(filename)$size)
     
     
