@@ -81,7 +81,7 @@ get_plot_budget <- function(service, month){
   payload <- paste0(URL,"?service_input=",encoded_service,"&month_input=",month)
   
   
-  result <- POST(payload)
+  result <- POST(payload,accept(".png"))
   data <- rawToChar(result$content)
   data <- fromJSON(data,flatten = TRUE)$ops_data
 }
