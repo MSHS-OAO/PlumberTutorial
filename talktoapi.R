@@ -51,11 +51,6 @@ library(gsubfn)
 
 
 
-res = request("https://hso-rconnect.mssm.edu/PlumberLearningSession/status") %>%
-  req_method("GET") %>%
-  req_perform()
-
-result <- fromJSON(rawToChar(res$body),flatten = TRUE)
 
 check_api <- function(){
   
@@ -64,6 +59,8 @@ check_api <- function(){
     req_perform()
   
   result <- fromJSON(rawToChar(res$body),flatten = TRUE)$status
+  
+  result
   
   
 }
@@ -97,6 +94,9 @@ get_plot_budget <- function(service, month){
   
 
 }
+
+
+check_api()
 
 service <- "Case Management / Social Work"
 month <- "04-2023"
