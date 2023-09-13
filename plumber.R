@@ -109,7 +109,7 @@ status <- function() {
 
 
 #' Plot a histogram
-#' @serializer png
+#' @serializer contentType list(type='image/png')
 #' @param service_input parameter to filter based on service line - format "Service Name"
 #' @param month_input parameter to filter based on service line - format "mm-yyyy"
 #' @get /get_plot
@@ -143,7 +143,7 @@ function(service_input,month_input) {
     
     dbDisconnect(conn)
     
-    ggplot(budget_metrics, aes(x=reorder(Site, -value_rounded), y=value_rounded)) + 
+    graph_bar <- ggplot(budget_metrics, aes(x=reorder(Site, -value_rounded), y=value_rounded)) + 
       geom_bar(stat = "identity") +
       labs(title = paste0("Budget Metrics for ",service_input," for month ",month_input),
            x = "Hospital",
@@ -151,6 +151,12 @@ function(service_input,month_input) {
       scale_y_continuous(labels=scales::dollar_format())+
       scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
       theme_minimal()
+    
+    filename <- paste0(service_input,month_input,".png")
+    ggsave(filename,graph_bar)
+    
+    #filename <- "Nursing04-2023.png"
+    readBin(filename, "raw", n = file.info(filename)$size)
     
     
 }
@@ -164,3 +170,7 @@ function(pr) {
         # Overwrite the default serializer to return unboxed JSON
         pr_set_serializer(serializer_unboxed_json())
 }
+
+
+# r <- plumb("plumber.R")
+# r$run(host="127.0.0.1",port=8000)
