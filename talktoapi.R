@@ -49,7 +49,7 @@ library(jsonlite)
 
 
 
-res = GET("https://hso-rconnect.mssm.edu/content/00f482fd-6420-4ca7-8c72-db7e2032f676/status")
+res = GET("https://hso-rconnect.mssm.edu/PlumberLearningSession/status")
 
 rawToChar(res$content)
 result <- fromJSON(rawToChar(res$content),flatten = TRUE)
@@ -60,7 +60,22 @@ result <- fromJSON(rawToChar(res$content),flatten = TRUE)
 get_data <- function(service, month){
   
   
-  URL <- "https://hso-rconnect.mssm.edu/content/00f482fd-6420-4ca7-8c72-db7e2032f676/get-operational-data"
+  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession/get-operational-data"
+  encoded_service <- URLencode(service, reserved = TRUE)
+  
+  payload <- paste0(URL,"?service_input=",encoded_service,"&month_input=",month)
+  
+  
+  result <- POST(payload)
+  data <- rawToChar(result$content)
+  data <- fromJSON(data,flatten = TRUE)$ops_data
+}
+
+
+get_plot_budget <- function(service, month){
+  
+  
+  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession/get-plot"
   encoded_service <- URLencode(service, reserved = TRUE)
   
   payload <- paste0(URL,"?service_input=",encoded_service,"&month_input=",month)
@@ -75,6 +90,9 @@ service <- "Case Management / Social Work"
 month <- "04-2023"
 
 data <- get_data(service,month)
+plot <- get_plot_budget(service,month)
+
+
 
 
 

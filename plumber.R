@@ -112,7 +112,7 @@ status <- function() {
 #' @serializer contentType list(type='image/png')
 #' @param service_input parameter to filter based on service line - format "Service Name"
 #' @param month_input parameter to filter based on service line - format "mm-yyyy"
-#' @get /get_plot
+#' @post /get_plot
 function(service_input,month_input) {
 
     # service_input = "Nursing"
