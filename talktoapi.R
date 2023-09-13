@@ -60,7 +60,7 @@ result <- fromJSON(rawToChar(res$content),flatten = TRUE)
 get_data <- function(service, month){
   
   
-  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession/get-operational-data"
+  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession//get-operational-data"
   encoded_service <- URLencode(service, reserved = TRUE)
   
   payload <- paste0(URL,"?service_input=",encoded_service,"&month_input=",month)
@@ -90,7 +90,7 @@ service <- "Case Management / Social Work"
 month <- "04-2023"
 
 data <- get_data(service,month)
-plot <- get_plot_budget(service,month)
+#plot <- get_plot_budget()
 
 
 
