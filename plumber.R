@@ -93,7 +93,6 @@ get_ops_data <- function(service_input,month_input,res){
            Reporting_Month_Ref = REPORTING_MONTH
     ) %>%
     mutate(Reporting_Month = format(Reporting_Month_Ref, "%m-%Y"))%>% 
-    select(-METRIC_NAME_SUBMITTED) %>%
     distinct()
   
   dbDisconnect(conn)
