@@ -108,7 +108,7 @@ status <- function() {
 }
 
 
-#' Plot a histogram
+#' Plot a bar plot
 #' @serializer contentType list(type='image/png')
 #' @param service_input parameter to filter based on service line - format "Service Name"
 #' @param month_input parameter to filter based on service line - format "mm-yyyy"
