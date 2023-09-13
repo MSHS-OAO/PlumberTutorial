@@ -70,7 +70,7 @@ dsn <- "OAO Cloud DB Production"
 #' @param service_input parameter to filter based on service line - format "Service Name"
 #' @param month_input parameter to filter based on service line - format "mm-yyyy"
 #' @post /get-operational-data
-get_ops_data <- function(service_input,month_input,res){
+get_ops_data <- function(service_input,month_input,res,req){
   
   # service_input = "Nursing"
   # month_input = "04-2023"
