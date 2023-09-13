@@ -43,16 +43,19 @@ library(magrittr)
 library(DBI)
 library(odbc)
 library(dbplyr)
-library(httr)
+library(httr2)
+library(curl)
 library(jsonlite)
+library(gsubfn)
 #library(reshape2)
 
 
 
-res = GET("https://hso-rconnect.mssm.edu/PlumberLearningSession/status")
+res = request("https://hso-rconnect.mssm.edu/PlumberLearningSession/status") %>%
+  req_method("GET") %>%
+  req_perform()
 
-rawToChar(res$content)
-result <- fromJSON(rawToChar(res$content),flatten = TRUE)
+result <- fromJSON(rawToChar(res$body),flatten = TRUE)
 
 
 
@@ -60,14 +63,16 @@ result <- fromJSON(rawToChar(res$content),flatten = TRUE)
 get_data <- function(service, month){
   
   
-  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession//get-operational-data"
+  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession/get-operational-data"
   encoded_service <- URLencode(service, reserved = TRUE)
   
   payload <- paste0(URL,"?service_input=",encoded_service,"&month_input=",month)
   
+  result <- request(payload) %>%
+    req_method("POST") %>%
+    req_perform()
   
-  result <- POST(payload)
-  data <- rawToChar(result$content)
+  data <- rawToChar(result$body)
   data <- fromJSON(data,flatten = TRUE)$ops_data
 }
 
@@ -75,24 +80,18 @@ get_data <- function(service, month){
 get_plot_budget <- function(service, month){
   
   
-  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession/get-plot"
+  URL <- "https://hso-rconnect.mssm.edu/PlumberLearningSession/get_plot"
   encoded_service <- URLencode(service, reserved = TRUE)
-  
   payload <- paste0(URL,"?service_input=",encoded_service,"&month_input=",month)
+  filename = paste0(gsub(" ", "",gsub("/","",service)),month,".png")
+  download.file(payload, filename, mode = "wb")
   
-  
-  result <- POST(payload,accept(".png"))
-  data <- rawToChar(result$content)
-  data <- fromJSON(data,flatten = TRUE)$ops_data
+
 }
 
 service <- "Case Management / Social Work"
 month <- "04-2023"
 
 data <- get_data(service,month)
-#plot <- get_plot_budget()
-
-
-
-
+plot <- get_plot_budget(service,month)
 
