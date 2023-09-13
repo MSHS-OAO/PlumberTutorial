@@ -100,18 +100,20 @@ get_ops_data <- function(service_input,month_input,res){
   
 }
 
-#* API status function
-#* @get /status
+#' API status function
+#' @get /status
 status <- function() {
   list(status = "API is running",
        time = Sys.time())
 }
 
 
-#* Plot a histogram
-#* @serializer png
-#* @get /get_plot
-function() {
+#' Plot a histogram
+#' @serializer png
+#' @param service_input parameter to filter based on service line - format "Service Name"
+#' @param month_input parameter to filter based on service line - format "mm-yyyy"
+#' @get /get_plot
+function(service_input,month_input) {
 
     # service_input = "Nursing"
     # month_input = "04-2023"
@@ -156,7 +158,7 @@ function() {
 
 
 # Programmatically alter your API
-#* @plumber
+#' @plumber
 function(pr) {
     pr %>%
         # Overwrite the default serializer to return unboxed JSON
