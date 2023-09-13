@@ -57,7 +57,16 @@ res = request("https://hso-rconnect.mssm.edu/PlumberLearningSession/status") %>%
 
 result <- fromJSON(rawToChar(res$body),flatten = TRUE)
 
-
+check_api <- function(){
+  
+  res = request("https://hso-rconnect.mssm.edu/PlumberLearningSession/status") %>%
+    req_method("GET") %>%
+    req_perform()
+  
+  result <- fromJSON(rawToChar(res$body),flatten = TRUE)$status
+  
+  
+}
 
 
 get_data <- function(service, month){
@@ -91,6 +100,9 @@ get_plot_budget <- function(service, month){
 
 service <- "Case Management / Social Work"
 month <- "04-2023"
+
+
+
 
 data <- get_data(service,month)
 plot <- get_plot_budget(service,month)
