@@ -65,7 +65,6 @@ dsn <- "OAO Cloud DB Production"
 
 
 #' get the data operational data
-#' @serializer rds
 #' @param service_input parameter to filter based on service line - format "Service Name"
 #' @param month_input parameter to filter based on service line - format "mm-yyyy"
 #' @post /get-operational-data
@@ -111,11 +110,49 @@ status <- function() {
 
 #* Plot a histogram
 #* @serializer png
-#* @get /plot
+#* @get /get_plot
 function() {
-    rand <- rnorm(100)
-    hist(rand)
+
+    # service_input = "Nursing"
+    # month_input = "04-2023"
+    
+    month <- as.Date(paste0(month_input, "-01"), "%m-%Y-%d")
+    format <- "YYYY-MM-DD HH24:MI:SS"
+    
+    
+    conn <- dbConnect(drv = odbc::odbc(),
+                      dsn = dsn)
+    sr_tbl <- tbl(conn, "SUMMARY_REPO")
+    budget_metrics <- sr_tbl %>% 
+      filter(SERVICE %in% service_input,
+             TO_DATE(month, format) == REPORTING_MONTH,
+             METRIC_NAME_SUBMITTED == "Budget_Total (Monthly)" ) %>%
+      select(-UPDATED_TIME, -UPDATED_USER) %>% collect() %>%
+      rename(Service = SERVICE,
+             Site = SITE,
+             Premier_Reporting_Period = PREMIER_REPORTING_PERIOD,
+             value_rounded = VALUE,
+             Reporting_Month_Ref = REPORTING_MONTH
+      ) %>%
+      mutate(Reporting_Month = format(Reporting_Month_Ref, "%m-%Y"))%>% 
+      select(-METRIC_NAME_SUBMITTED) %>%
+      distinct() %>%
+      arrange(value_rounded)
+    
+    dbDisconnect(conn)
+    
+    ggplot(budget_metrics, aes(x=reorder(Site, -value_rounded), y=value_rounded)) + 
+      geom_bar(stat = "identity") +
+      labs(title = paste0("Budget Metrics for ",service_input," for month ",month_input),
+           x = "Hospital",
+           y ="Budget" )+
+      scale_y_continuous(labels=scales::dollar_format())+
+      scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+      theme_minimal()
+    
+    
 }
+
 
 
 # Programmatically alter your API
